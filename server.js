@@ -15,6 +15,7 @@ const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'),
 const debug = require('debug')('app:server');
 
 
+console.log('user: ', process.env.CONN_DEV_USER)
 // mysql connection pool
 const pool = mysql.createPool({
   connectionLimit : 10,
@@ -26,7 +27,7 @@ const pool = mysql.createPool({
 
 console.log('pool: ', pool);
 
-// Express Middleware to verify every request contains a valid 
+// Express Middleware to verify every request contains a valid
 // macAddress and sessionKey combination
 const authorizedDevice = function(req, res, next) {
   const macAddress = req.body.macAddress || req.query.macAddress;
@@ -49,9 +50,10 @@ const authorizedDevice = function(req, res, next) {
       }
     }
   });
+}
 app.use(logger('dev'));                                    // log to console
 app.use(logger('combined', { stream: accessLogStream }));  // log to file
-app.use(cors());                                           // enable cross-origin resource sharing 
+app.use(cors());                                           // enable cross-origin resource sharing
 app.use(bodyParser.json()); 						                   // for  application/json
 app.use(bodyParser.urlencoded({extended: false}));         // for application/x-www-form-urlencoded
 app.use(authorizedDevice);                                 // check macAddress and sessionKey
@@ -61,23 +63,32 @@ const server = app.listen(process.env.PORT || 8083, function () {
     const port = server.address().port;
     debug('app listening at http://%s:%s', host, port)
 });
+  console.log('foo')
 
 // Add data point to databases
 app.post('/data', function(req,res) {
   const macAddress = req.body.macAddress;
-  const data = req.body.data;
+  const data = JSON.parse(req.body.data);
+  console.log('data: ', data)
+  console.log('typeof: ', typeof data)
   if (!data) {
     res.status(400).send(`Bad request, data can not be null\n`);
     return;
   }
-  const key_order = req.body.data.keys().map(key => { return key });
-  const values = req.body.data.keys().map(val => {return req.body.data[val] });
-  const insert =' ';// `INSERT INTO data (${key_order.join(',')}) VALUES (${values.join(',')})`;
+  const key_order = Object.keys(data).map(key => { return key });
+  const values = Object.keys(data).map(val => {
+    if (typeof data[val] == 'string') {
+      return '"' + data[val] + '"';
+    } else {
+    return data[val]
+    }
+  });
+  const insert = `INSERT INTO data (${key_order.join(',')}) VALUES (${values.join(',')})`;
   console.log('INSERT: ', insert);
-  const params = [macAddress, data];
-  debug(insert, params);
+  //const params = [macAddress, data];
+  debug(insert);
 
-  pool.query(insert, params, (error, results, fields) => {
+  pool.query(insert, (error, results, fields) => {
     if (error) {
       console.error(error);
       res.status(500).send('server error\n');
@@ -87,7 +98,7 @@ app.post('/data', function(req,res) {
       res.status(201).send(`Created ${results.insertId}\n`);
     }
   });
-  
+
 });
 
 // Get all the data submitted for a MAC address
@@ -143,4 +154,4 @@ app.delete('/data/:transactionID', function(req,res) {
 
 app.get('/', function(req,res) {
   res.send('hello');
-});}
+});
