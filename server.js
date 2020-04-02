@@ -35,7 +35,6 @@ const authorizedDevice = function(req, res, next) {
 
   const query = 'SELECT mac_address FROM authorized_device WHERE mac_address = ? and session_key = ?';
   const params = [macAddress, sessionKey];
-  console.log('params: ', params);
 
   pool.query(query, params, (error, results, fields) => {
     if (error) {
@@ -115,7 +114,6 @@ app.get('/itpower-data', function(req,res) {
 
 app.get('/itpower-data-by-category', function(req, res) {
   let category = req.body.category;
-  console.log('body: ', req.body);
   const macAddress = req.body.macAddress;
   const query = `select ${category} FROM data;`
   const params = [macAddress];
@@ -128,12 +126,9 @@ app.get('/itpower-data-by-category', function(req, res) {
 })
 
 app.get('/itpower-data-by-time', function(req, res) {
-  console.log('body: ', req.body);
   const dateFrom = moment(req.body.dateFrom).format('YYYY-MM-DD HH:mm:ss');
-  console.log('dateFrom: ', dateFrom);
   const macAddress = req.body.macAddress;
   const dateTo = moment(req.body.dateTo).format('YYYY-MM-DD HH:mm:ss');
-	console.log('dateTo:', dateTo);
   const query = `select * FROM data where recorded_at between '${dateFrom}' and '${dateTo}';`
   const params = [macAddress];
   debug(query, params);
