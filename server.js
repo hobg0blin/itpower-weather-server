@@ -15,7 +15,6 @@ const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'),
 const debug = require('debug')('app:server');
 
 
-console.log('user: ', process.env.CONN_DEV_USER)
 // mysql connection pool
 const pool = mysql.createPool({
   connectionLimit : 10,
@@ -26,6 +25,7 @@ const pool = mysql.createPool({
 });
 
 console.log('pool: ', pool);
+
 
 // Express Middleware to verify every request contains a valid
 // macAddress and sessionKey combination
@@ -58,19 +58,19 @@ app.use(bodyParser.json()); 						                   // for  application/json
 app.use(bodyParser.urlencoded({extended: false}));         // for application/x-www-form-urlencoded
 app.use(authorizedDevice);                                 // check macAddress and sessionKey
 
-const server = app.listen(process.env.PORT || 8083, function () {
+const server = app.listen(8083, function () {
     const host = server.address().address;
     const port = server.address().port;
     debug('app listening at http://%s:%s', host, port)
 });
-  console.log('foo')
 
 // Add data point to databases
-app.post('/data', function(req,res) {
+app.post('/itpower-data', function(req,res) {
   const macAddress = req.body.macAddress;
+  console.log('body: ', req.body);
+  console.log('rawdata: ', req.body.data);
   const data = JSON.parse(req.body.data);
   console.log('data: ', data)
-  console.log('typeof: ', typeof data)
   if (!data) {
     res.status(400).send(`Bad request, data can not be null\n`);
     return;
@@ -84,7 +84,6 @@ app.post('/data', function(req,res) {
     }
   });
   const insert = `INSERT INTO data (${key_order.join(',')}) VALUES (${values.join(',')})`;
-  console.log('INSERT: ', insert);
   //const params = [macAddress, data];
   debug(insert);
 
@@ -102,9 +101,9 @@ app.post('/data', function(req,res) {
 });
 
 // Get all the data submitted for a MAC address
-app.get('/data', function(req,res) {
+app.get('/itpower-data', function(req,res) {
   const macAddress = req.body.macAddress || req.query.macAddress;
-  const query = 'SELECT id as transactionID, mac_address as macAddress, data_point as data, recorded_at as timestamp FROM readings WHERE mac_address=?';
+  const query = 'SELECT * FROM data';
   const params = [macAddress];
   debug(query, params);
 
