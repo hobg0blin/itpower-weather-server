@@ -35,6 +35,7 @@ const authorizedDevice = function(req, res, next) {
 
   const query = 'SELECT mac_address FROM authorized_device WHERE mac_address = ? and session_key = ?';
   const params = [macAddress, sessionKey];
+  console.log('params: ', params);
 
   pool.query(query, params, (error, results, fields) => {
     if (error) {
@@ -61,6 +62,7 @@ app.use(authorizedDevice);                                 // check macAddress a
 const server = app.listen(8083, function () {
     const host = server.address().address;
     const port = server.address().port;
+    console.log('listening');
     debug('app listening at http://%s:%s', host, port)
 });
 
@@ -111,8 +113,9 @@ app.get('/itpower-data', function(req,res) {
   });
 });
 
-app.get('/data-by-category/', function(req, res) {
+app.get('/itpower-data-by-category', function(req, res) {
   let category = req.body.category;
+  console.log('body: ', req.body);
   const macAddress = req.body.macAddress;
   const query = `select ${category} FROM data;`
   const params = [macAddress];
@@ -124,10 +127,13 @@ app.get('/data-by-category/', function(req, res) {
   })
 })
 
-app.get('/data-by-time/', function(req, res) {
+app.get('/itpower-data-by-time', function(req, res) {
+  console.log('body: ', req.body);
   const dateFrom = moment(req.body.dateFrom).format('YYYY-MM-DD HH:mm:ss');
+  console.log('dateFrom: ', dateFrom);
   const macAddress = req.body.macAddress;
   const dateTo = moment(req.body.dateTo).format('YYYY-MM-DD HH:mm:ss');
+	console.log('dateTo:', dateTo);
   const query = `select * FROM data where recorded_at between '${dateFrom}' and '${dateTo}';`
   const params = [macAddress];
   debug(query, params);
@@ -138,7 +144,7 @@ app.get('/data-by-time/', function(req, res) {
 })
 
 // Get one record by id and MAC address
-app.get('/data/:transactionID', function(req,res) {
+app.get('/itpower-data/:transactionID', function(req,res) {
   const transactionID = req.params.transactionID;
   const macAddress = req.body.macAddress;
   const query = 'SELECT id as transactionID, mac_address as macAddress, data_point as data, recorded_at as timestamp FROM readings WHERE id=? AND mac_address=?';
