@@ -3,6 +3,7 @@ const app = express();
 const mysql = require('mysql');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const moment = require('moment');
 
 // logging
 const fs = require('fs');
@@ -24,7 +25,6 @@ const pool = mysql.createPool({
   database: process.env.CONN_DEV_DB
 });
 
-console.log('pool: ', pool);
 
 
 // Express Middleware to verify every request contains a valid
@@ -67,10 +67,7 @@ const server = app.listen(8083, function () {
 // Add data point to databases
 app.post('/itpower-data', function(req,res) {
   const macAddress = req.body.macAddress;
-  console.log('body: ', req.body);
-  console.log('rawdata: ', req.body.data);
   const data = JSON.parse(req.body.data);
-  console.log('data: ', data)
   if (!data) {
     res.status(400).send(`Bad request, data can not be null\n`);
     return;
@@ -114,6 +111,32 @@ app.get('/itpower-data', function(req,res) {
   });
 });
 
+app.get('/data-by-category/', function(req, res) {
+  let category = req.body.category;
+  const macAddress = req.body.macAddress;
+  const query = `select ${category} FROM data;`
+  const params = [macAddress];
+  debug(query, params);
+
+  pool.query(query, params, (error, results, fields) => {
+    res.setHeader('Content-Type', 'appplication/json');
+    res.end(JSON.stringify(results, null, 2));
+  })
+})
+
+app.get('/data-by-time/', function(req, res) {
+  const dateFrom = moment(req.body.dateFrom).format('YYYY-MM-DD HH:mm:ss');
+  const macAddress = req.body.macAddress;
+  const dateTo = moment(req.body.dateTo).format('YYYY-MM-DD HH:mm:ss');
+  const query = `select * FROM data where recorded_at between '${dateFrom}' and '${dateTo}';`
+  const params = [macAddress];
+  debug(query, params);
+  pool.query(query, params,(error, results, fields) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(results, null, 2));
+  })
+})
+
 // Get one record by id and MAC address
 app.get('/data/:transactionID', function(req,res) {
   const transactionID = req.params.transactionID;
@@ -133,23 +156,23 @@ app.get('/data/:transactionID', function(req,res) {
   });
 });
 
-// Delete one record by id and MAC address
-app.delete('/data/:transactionID', function(req,res) {
-  const transactionID = req.params.transactionID;
-  const macAddress = req.body.macAddress;
-
-  const query = 'DELETE FROM readings WHERE mac_address = ? AND id = ?';
-  const params = [macAddress, transactionID];
-  debug(query, params);
-
-  pool.query(query, params, (error, results, fields) => {
-    if (results.affectedRows > 0) {
-      res.status(200).send('OK\n');
-    } else {
-      res.status(404).send(`Id ${transactionID} not found\n`);
-    }
-  });
-});
+//// Delete one record by id and MAC address
+//app.delete('/data/:transactionID', function(req,res) {
+//  const transactionID = req.params.transactionID;
+//  const macAddress = req.body.macAddress;
+//
+//  const query = 'DELETE FROM readings WHERE mac_address = ? AND id = ?';
+//  const params = [macAddress, transactionID];
+//  debug(query, params);
+//
+//  pool.query(query, params, (error, results, fields) => {
+//    if (results.affectedRows > 0) {
+//      res.status(200).send('OK\n');
+//    } else {
+//      res.status(404).send(`Id ${transactionID} not found\n`);
+//    }
+//  });
+//});
 
 app.get('/', function(req,res) {
   res.send('hello');
