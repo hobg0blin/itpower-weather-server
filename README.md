@@ -46,14 +46,14 @@ Sample request:
 
 #### Data from a date range
 
-`https://{url}/itpower-data-by-time`: this endpoint takes a from and to date. We’re using moment.js to parse dates, so it can take a lot of formats. If you want to get granular, you can check out the [moment.js parsing documentation](https://momentjs.com/docs/#/parsing/).
+`https://{url}/itpower-data/by-time`: this endpoint takes a from and to date. We’re using moment.js to parse dates, so it can take a lot of formats. If you want to get granular, you can check out the [moment.js parsing documentation](https://momentjs.com/docs/#/parsing/).
 
 Sample request:
 
 `curl -X GET -d macAddress={yourMacAddress} -d sessionKey={yourSessionKey} dateFrom=’3-2-2020’ dateTo=’3-10-2020’ https://{url}/itpower-data-by-time`
 
 #### Data by category
-`https://{url}/itpower-data-by-category`: this can take a single category (e.g. `winddir`) or a comma-separated list of categories (e.g. `winddir, rainin`). It will return all data points from that category.
+`https://{url}/itpower-data/by-category`: this can take a single category (e.g. `winddir`) or a comma-separated list of categories (e.g. `winddir, rainin`). It will return all data points from that category.
 
 Sample request:
 

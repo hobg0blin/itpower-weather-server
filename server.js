@@ -112,7 +112,7 @@ app.get('/itpower-data', function(req,res) {
   });
 });
 
-app.get('/itpower-data-by-category', function(req, res) {
+app.get('/itpower-data/by-category', function(req, res) {
   let category = req.body.category;
   const macAddress = req.body.macAddress;
   const query = `select ${category} FROM data;`
@@ -125,7 +125,7 @@ app.get('/itpower-data-by-category', function(req, res) {
   })
 })
 
-app.get('/itpower-data-by-time', function(req, res) {
+app.get('/itpower-data/by-time', function(req, res) {
   const dateFrom = moment(req.body.dateFrom).format('YYYY-MM-DD HH:mm:ss');
   const macAddress = req.body.macAddress;
   const dateTo = moment(req.body.dateTo).format('YYYY-MM-DD HH:mm:ss');
