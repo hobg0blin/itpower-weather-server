@@ -68,7 +68,7 @@ const server = app.listen(8083, function () {
 // Add data point to databases
 app.post('/itpower-data', function(req,res) {
   const macAddress = req.body.macAddress;
-  const data = JSON.parse(req.body.data);
+  const data = req.body.data;
   if (!data) {
     res.status(400).send(`Bad request, data can not be null\n`);
     return;
