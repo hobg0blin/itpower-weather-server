@@ -8,7 +8,7 @@ The ITPower weather server collects longterm weather data from ITP’s weather s
 The server collects the following data:
 | data point        | type   |
 | ----------------- | ------ |
-| winddir           | int    |
+| wind_dir           | int    |
 | winddir_avg2m     | int    |
 | windspeedmph      | float  |
 | windgustdir_10m   | int    |
@@ -53,7 +53,7 @@ Sample request:
 `curl -X GET -d macAddress={yourMacAddress} -d sessionKey={yourSessionKey} dateFrom=’3-2-2020’ dateTo=’3-10-2020’ https://{url}/itpower-data/by-time`
 
 #### Data by category
-`https://{url}/itpower-data/by-category`: this can take a single category (e.g. `winddir`) or a comma-separated list of categories (e.g. `winddir, rainin`). It will return all data points from that category.
+`https://{url}/itpower-data/by-category`: this can take a single category (e.g. `wind_dir`) or a comma-separated list of categories (e.g. `wind_dir, rainin`). It will return all data points from that category.
 
 Sample request:
 
