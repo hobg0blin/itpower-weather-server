@@ -50,7 +50,7 @@ Sample request:
 
 Sample request:
 
-`curl -X GET -d macAddress={yourMacAddress} -d sessionKey={yourSessionKey} dateFrom=’3-2-2020’ dateTo=’3-10-2020’ https://{url}/itpower-data/by-time`
+`curl -X GET -d macAddress={yourMacAddress} -d sessionKey={yourSessionKey} -d dateFrom=’3-2-2020’ -d dateTo=’3-10-2020’ https://{url}/itpower-data/by-time`
 
 #### Data by category
 `https://{url}/itpower-data/by-category`: this can take a single category (e.g. `wind_dir`) or a comma-separated list of categories (e.g. `wind_dir, rainin`). It will return all data points from that category.

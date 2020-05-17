@@ -33,8 +33,9 @@ const authorizedDevice = function(req, res, next) {
   const macAddress = req.body.macAddress || req.query.macAddress;
   const sessionKey = req.body.sessionKey || req.query.sessionKey;
 
-  const query = 'SELECT mac_address FROM authorized_device WHERE mac_address = ? and session_key = ?';
+  const query = 'SELECT auth_key FROM authorized_device WHERE auth_key = ? and session_key = ?';
   const params = [macAddress, sessionKey];
+   console.log('params: ', params)
 
   pool.query(query, params, (error, results, fields) => {
     if (error) {
@@ -73,6 +74,11 @@ app.post('/itpower-data', function(req,res) {
     res.status(400).send(`Bad request, data can not be null\n`);
     return;
   }
+  if (macAddress != process.env.PRIMARY_AUTH_KEY) {
+    res.status(400).send(`device not authorized to post`);
+    return;
+  }
+
   const key_order = Object.keys(data).map(key => { return key });
   const values = Object.keys(data).map(val => {
     if (typeof data[val] == 'string') {
@@ -142,12 +148,15 @@ app.get('/itpower-data/by-time', function(req, res) {
 app.get('/itpower-data/:transactionID', function(req,res) {
   const transactionID = req.params.transactionID;
   const macAddress = req.body.macAddress;
-  const query = 'SELECT id as transactionID, mac_address as macAddress, data_point as data, recorded_at as timestamp FROM readings WHERE id=? AND mac_address=?';
+  const query = 'SELECT * FROM data WHERE id=?';
   const params = [transactionID, macAddress];
   debug(query, params);
 
   pool.query(query, params, (error, results, fields) => {
-    if (results.length > 0) {
+    if (error) {
+      console.error(error);
+      res.status(500).send('server error\n');
+    } else if (results.length > 0) {
       // return pretty JSON which is inefficient but much easier to understand
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(results[0], null, 2));
@@ -162,7 +171,8 @@ app.get('/itpower-data/:transactionID', function(req,res) {
 //  const transactionID = req.params.transactionID;
 //  const macAddress = req.body.macAddress;
 //
-//  const query = 'DELETE FROM readings WHERE mac_address = ? AND id = ?';
+//  const query = 'DELETE FROM readings WHERE mmac_addressac_address = ? AND id = ?';
+//  sjj
 //  const params = [macAddress, transactionID];
 //  debug(query, params);
 //
